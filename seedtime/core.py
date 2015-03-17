@@ -48,8 +48,8 @@ from deluge.core.rpcserver import export
 
 CONFIG_DEFAULT = {
     "remove_torrent": False,
-    "filter_list": [{'field':'default', 'filter':".*", 'stop_time':7.0}],
-    "torrent_stop_times":{} # torrent_id: stop_time (in hours)
+    "filter_list": [{'field': 'default', 'filter': ".*", 'stop_time': 7.0}],
+    "torrent_stop_times": {}  # torrent_id: stop_time (in hours)
 }
 
 class Core(CorePluginBase):
@@ -99,19 +99,20 @@ class Core(CorePluginBase):
         if not self.torrent_manager.session_started:
             return
         log.debug("seedtime post_torrent_add")
-        
-        #wait to apply initial seedtime filter, other plugins (i.e. label) need to run their post_torrent_add hooks first
+
+        # wait to apply initial seedtime filter
+        # other plugins (i.e. label) need to run their post_torrent_add hooks first
         deferLater(reactor, 1, self.apply_filter, torrent_id)
 
-    def apply_filter(self,torrent_id):
+    def apply_filter(self, torrent_id):
         for filter_list in self.config['filter_list']:
             search_strs = None
             stop_time = None
             if filter_list['field'] == 'label':
                 if 'Label' in component.get("CorePluginManager").get_enabled_plugins():
-                    try: #If label plugin changes and code no longer works, ignore this filter
+                    try:  # If label plugin changes and code no longer works, ignore this filter
                         # Can't seem to retrieve label from torrent manager so we must use the label plugin methods
-                        #label_str = component.get("TorrentManager")[torrent_id].get_status(["label"])
+                        # label_str = component.get("TorrentManager")[torrent_id].get_status(["label"])
                         label_str = component.get("CorePlugin.Label")._status_get_label(torrent_id)
                         if len(label_str) > 0:
                             search_strs = [label_str]
@@ -123,18 +124,19 @@ class Core(CorePluginBase):
                 search_strs = [tracker["url"] for tracker in trackers]
             elif filter_list['field'] == 'default':
                 search_strs = ['']
-            else: #unknown filter, ignore
+            else:  # unknown filter, ignore
                 pass
-                
+
             if search_strs is not None:
-                for search_str in search_strs:      
+                for search_str in search_strs:
                     if re.search(filter_list['filter'], search_str) is not None:
                         stop_time = filter_list['stop_time']
-                        log.debug('filter %s matched %s %s' % (filter_list['filter'], filter_list['field'], search_str) )
+                        log.debug('filter %s matched %s %s' %
+                                  (filter_list['filter'], filter_list['field'], search_str))
                 if stop_time is not None:
                     log.debug('applying stop.... time %r' % stop_time)
                     self.set_torrent(torrent_id, stop_time)
-                    break #stop looking through filter list
+                    break  # stop looking through filter list
 
     def post_torrent_remove(self, torrent_id):
         log.debug("seedtime post_torrent_remove")

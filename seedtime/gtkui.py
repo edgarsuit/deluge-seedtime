@@ -66,10 +66,10 @@ class GtkUI(GtkPluginBase):
         self.seedtime_menu = SeedTimeMenu()
         torrentmenu.append(self.seedtime_menu)
         self.seedtime_menu.show_all()
-        
-        #Build Preference filter table
+
+        # Build Preference filter table
         self.setupFilterTable()
-        
+
     def setupFilterTable(self):
         # Setup filter button callbacks
         self.btnAdd = self.glade.get_widget("btnAdd")
@@ -80,18 +80,19 @@ class GtkUI(GtkPluginBase):
         self.btnUp.connect("clicked", self.btnUpCallback)
         self.btnDown = self.glade.get_widget("btnDown")
         self.btnDown.connect("clicked", self.btnDownCallback)
-        
-        # cell by cell renderer callback, changes field and filter to not editable if the current row is the default filter
+
+        # cell by cell renderer callback, changes field and filter to not editable
+        # if the current row is the default filter
         def rowRendererCb(column, cell, model, itr):
             if model.get_value(itr, 0) == 'default':
                 cell.set_property('editable', False)
             else:
                 cell.set_property('editable', True)
 
-        #creating the treeview,and add columns
+        # creating the treeview,and add columns
         self.treeview = gtk.TreeView()
-        
-        #setup Field column
+
+        # setup Field column
         liststore_field = gtk.ListStore(str)
         for item in ["tracker", "label"]:
             liststore_field.append([item])
@@ -109,8 +110,8 @@ class GtkUI(GtkPluginBase):
         tooltips = Tooltips()
         tooltips.set_tip(label, "Torrent Field to filter.")
         self.treeview.append_column(column)
-        
-        #setup Filter column
+
+        # setup Filter column
         renderer = gtk.CellRendererText()
         renderer.set_property("editable", True)
         renderer.connect("edited", self.on_filter_changed)
@@ -122,8 +123,8 @@ class GtkUI(GtkPluginBase):
         tooltips = Tooltips()
         tooltips.set_tip(label, "RegEx filter to apply to Field")
         self.treeview.append_column(column)
-        
-        #setup stop time column
+
+        # setup stop time column
         renderer = gtk.CellRendererSpin()
         renderer.connect("edited", self.on_stoptime_edited)
         renderer.set_property("editable", True)
@@ -134,13 +135,14 @@ class GtkUI(GtkPluginBase):
         column.set_widget(label)
         label.show()
         tooltips = Tooltips()
-        tooltips.set_tip(label, "Set the amount of time a torrent seeds for before being stopped. Default value is editable")
+        tooltips.set_tip(label, "Set the amount of time a torrent seeds for "
+                                "before being stopped. Default value is editable")
         self.treeview.append_column(column)
 
         self.sw1 = self.glade.get_widget('scrolledwindow1')
-        self.sw1.add(self.treeview)   
-        self.sw1.show_all()     
-        
+        self.sw1.add(self.treeview)
+        self.sw1.show_all()
+
     def disable(self):
         component.get("Preferences").remove_page("SeedTime")
         component.get("PluginManager").deregister_hook("on_apply_prefs", self.on_apply_prefs)
@@ -160,7 +162,7 @@ class GtkUI(GtkPluginBase):
 
         config = {
             "remove_torrent": self.glade.get_widget("chk_remove_torrent").get_active(),
-            "filter_list": list({'field':r[0], 'filter':r[1], 'stop_time':r[2]} for r in self.liststore)
+            "filter_list": list({'field': row[0], 'filter': row[1], 'stop_time': row[2]} for row in self.liststore)
         }
         client.seedtime.set_config(config)
 
@@ -171,12 +173,12 @@ class GtkUI(GtkPluginBase):
         """callback for on show_prefs"""
         log.debug('cb get config seedtime')
         self.glade.get_widget("chk_remove_torrent").set_active(config["remove_torrent"])
-        
+
         # populate filter table
         self.liststore = gtk.ListStore(str, str, float)
         for filter_ref in config['filter_list']:
             self.liststore.append([filter_ref['field'], filter_ref['filter'], filter_ref['stop_time']])
-            
+
         self.treeview.set_model(self.liststore)
 
     def on_field_changed(self, widget, path, text):
@@ -194,7 +196,7 @@ class GtkUI(GtkPluginBase):
     def btnRemoveCallback(self, widget):
         selection = self.treeview.get_selection()
         model, paths = selection.get_selected_rows()
-        
+
         # Get the TreeIter instance for each path
         for path in paths:
             itr = model.get_iter(path)
@@ -204,7 +206,7 @@ class GtkUI(GtkPluginBase):
     def btnUpCallback(self, widget):
         selection = self.treeview.get_selection()
         model, paths = selection.get_selected_rows()
-        
+
         for path in paths:
             itr = model.get_iter(path)
             # Don't move the default filter
@@ -218,7 +220,7 @@ class GtkUI(GtkPluginBase):
     def btnDownCallback(self, widget):
         selection = self.treeview.get_selection()
         model, paths = selection.get_selected_rows()
-        
+
         for path in paths:
             itr = model.get_iter(path)
             # Don't move the default filter
