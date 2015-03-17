@@ -162,11 +162,12 @@
             </child>
             <child>
               <widget class="GtkButton" id="btnUp">
-                <property name="label" translatable="yes">Up</property>
+                <property name="label">gtk-go-up</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
@@ -179,11 +180,12 @@
             </child>
             <child>
               <widget class="GtkButton" id="btnDown">
-                <property name="label" translatable="yes">Down</property>
+                <property name="label">gtk-go-down</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
@@ -196,11 +198,12 @@
             </child>
             <child>
               <widget class="GtkButton" id="btnAdd">
-                <property name="label" translatable="yes">Add</property>
+                <property name="label">gtk-add</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
@@ -211,11 +214,12 @@
             </child>
             <child>
               <widget class="GtkButton" id="btnRemove">
-                <property name="label" translatable="yes">Remove</property>
+                <property name="label">gtk-remove</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
