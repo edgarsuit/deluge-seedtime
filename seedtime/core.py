@@ -49,7 +49,8 @@ from deluge.core.rpcserver import export
 CONFIG_DEFAULT = {
     "remove_torrent": False,
     "filter_list": [{'field': 'default', 'filter': ".*", 'stop_time': 7.0}],
-    "torrent_stop_times": {}  # torrent_id: stop_time (in hours)
+    "torrent_stop_times": {},  # torrent_id: stop_time (in hours)
+    "delay_time": 1  # delay between adding torrent and setting initial seed time (in seconds)
 }
 
 class Core(CorePluginBase):
@@ -59,6 +60,7 @@ class Core(CorePluginBase):
     def enable(self):
         self.config = deluge.configmanager.ConfigManager("seedtime.conf", CONFIG_DEFAULT)
         self.torrent_stop_times = self.config["torrent_stop_times"]
+        self.delay_time = self.config["delay_time"]
         self.torrent_manager = component.get("TorrentManager")
         self.plugin = component.get("CorePluginManager")
         self.plugin.register_status_field("seed_stop_time", self._status_get_seed_stop_time)
@@ -102,7 +104,8 @@ class Core(CorePluginBase):
 
         # wait to apply initial seedtime filter
         # other plugins (i.e. label) need to run their post_torrent_add hooks first
-        deferLater(reactor, 1, self.apply_filter, torrent_id)
+        # or the user may wish to set the label before we apply the seed time filter
+        deferLater(reactor, self.delay_time, self.apply_filter, torrent_id)
 
     def apply_filter(self, torrent_id):
         for filter_list in self.config['filter_list']:

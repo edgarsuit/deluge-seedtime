@@ -162,7 +162,8 @@ class GtkUI(GtkPluginBase):
 
         config = {
             "remove_torrent": self.glade.get_widget("chk_remove_torrent").get_active(),
-            "filter_list": list({'field': row[0], 'filter': row[1], 'stop_time': row[2]} for row in self.liststore)
+            "filter_list": list({'field': row[0], 'filter': row[1], 'stop_time': row[2]} for row in self.liststore),
+            "delay_time": self.glade.get_widget("delay_time").get_value_as_int()
         }
         client.seedtime.set_config(config)
 
