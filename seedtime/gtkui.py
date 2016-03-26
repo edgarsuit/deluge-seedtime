@@ -174,6 +174,7 @@ class GtkUI(GtkPluginBase):
         """callback for on show_prefs"""
         log.debug('cb get config seedtime')
         self.glade.get_widget("chk_remove_torrent").set_active(config["remove_torrent"])
+        self.glade.get_widget("delay_time").set_value(config["delay_time"])
 
         # populate filter table
         self.liststore = gtk.ListStore(str, str, float)
