@@ -64,6 +64,7 @@ class Core(CorePluginBase):
         self.torrent_manager = component.get("TorrentManager")
         self.plugin = component.get("CorePluginManager")
         self.plugin.register_status_field("seed_stop_time", self._status_get_seed_stop_time)
+        self.plugin.register_status_field("seed_time_remaining", self._status_get_remaining_seed_time)
         self.torrent_manager = component.get("TorrentManager")
 
         component.get("EventManager").register_event_handler("TorrentAddedEvent", self.post_torrent_add)
@@ -78,6 +79,7 @@ class Core(CorePluginBase):
 
     def disable(self):
         self.plugin.deregister_status_field("seed_stop_time")
+        self.plugin.deregister_status_field("seed_time_remaining")
         if self.looping_call.running:
             self.looping_call.stop()
 
@@ -171,3 +173,10 @@ class Core(CorePluginBase):
     def _status_get_seed_stop_time(self, torrent_id):
         """Returns the stop seed time for the torrent."""
         return self.torrent_stop_times.get(torrent_id, 0) * 3600.0 * 24.0
+
+    def _status_get_remaining_seed_time(self, torrent_id):
+        """Returns the stop seed time for the torrent."""
+        stop_time = self._status_get_seed_stop_time(torrent_id)
+        torrent = component.get("TorrentManager")[torrent_id]
+        seed_time = torrent.get_status(['seeding_time'])['seeding_time']
+        return max(0, stop_time-seed_time)
