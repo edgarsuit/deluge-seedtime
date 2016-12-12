@@ -31,20 +31,112 @@ Copyright:
     statement from all source files in the program, then also delete it here.
 */
 
-SeedTimePlugin = Ext.extend(Deluge.Plugin, {
-	constructor: function(config) {
-		config = Ext.apply({
-			name: "SeedTime"
-		}, config);
-		SeedTimePlugin.superclass.constructor.call(this, config);
-	},
+Ext.ns('Deluge.ux');
 
-	onDisable: function() {
+Ext.ns('Deluge.ux.preferences');
 
-	},
+Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
 
-	onEnable: function() {
+    border: false,
+    title: _('SeedTime'),
+    header: false,
+    layout: 'fit',
 
-	}
+    initComponent: function() {
+        Deluge.ux.preferences.SeedTimePage.superclass.initComponent.call(this);
+
+        this.form = this.add({
+            xtype: 'form',
+            layout: 'form',
+            border: false,
+            autoHeight: true
+        });
+
+        // this.schedule = this.form.add(new Deluge.ux.ScheduleSelector());
+
+        this.settings = this.form.add({
+          xtype : 'fieldset',
+          border : false,
+          title : _('Settings'),
+          autoHeight : true,
+          defaultType : 'spinnerfield',
+          defaults : {minValue : -1, maxValue : 99999},
+          style : 'margin-top: 5px; margin-bottom: 0px; padding-bottom: 0px;',
+          labelWidth : 200,
+          items : [
+            {
+              fieldLabel : _('delay (seconds)'),
+              name : 'delay_time',
+              width : 80,
+              value : 30,
+              minValue : 1,
+              maxValue : 300,
+              decimalPrecision : 0,
+              id : 'torrent_delay'
+            },
+            {
+              xtype : "checkbox",
+              fieldLabel : 'Remove torrent when stopping',
+              name : 'chk_remove_torrent',
+              checked : true,
+              id : 'rm_torrent_checkbox'
+            }
+          ]
+        });
+
+        this.removeWhenStopped = this.settings.items.get("rm_torrent_checkbox");
+        this.delayTime = this.settings.items.get("torrent_delay");
+
+        this.on('show', this.updateConfig, this);
+    },
+
+    onRender: function(ct, position) {
+        Deluge.ux.preferences.SeedTimePage.superclass.onRender.call(this, ct, position);
+        this.form.layout = new Ext.layout.FormLayout();
+        this.form.layout.setContainer(this);
+        this.form.doLayout();
+    },
+
+    onApply: function() {
+        // build settings object
+        var config = {};
+
+        config['remove_torrent'] = this.removeWhenStopped.getValue();
+        // config['filter_list'] = [];//this.store.data;
+        config['delay_time'] = this.delayTime.getValue();
+
+        console.log(config);
+
+        deluge.client.seedtime.set_config(this.initial_config);
+    },
+
+    onOk: function() {
+        this.onApply();
+    },
+
+    updateConfig: function() {
+        deluge.client.seedtime.get_config({
+            success: function(config) {
+                this.initial_config = config
+                this.removeWhenStopped.setValue(config['remove_torrent']);
+                // this.store.data = config['filter_list'];
+                this.delayTime.setValue(config['delay_time']);
+            },
+            scope: this
+        });
+    }
 });
-new SeedTimePlugin();
+
+SeedTimePlugin = Ext.extend(Deluge.Plugin, {
+
+    name: 'SeedTime',
+
+    onDisable: function() {
+        deluge.preferences.removePage(this.prefsPage);
+    },
+
+    onEnable: function() {
+        this.prefsPage = deluge.preferences.addPage(new Deluge.ux.preferences.SeedTimePage());
+    }
+});
+Deluge.registerPlugin('SeedTime', SeedTimePlugin);

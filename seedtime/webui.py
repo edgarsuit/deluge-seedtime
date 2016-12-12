@@ -37,19 +37,15 @@
 #    statement from all source files in the program, then also delete it here.
 #
 
-from deluge.log import LOG as log
-from deluge.ui.client import client
-from deluge import component
+import logging
+
 from deluge.plugins.pluginbase import WebPluginBase
 
 from common import get_resource
 
+log = logging.getLogger(__name__)
+
 class WebUI(WebPluginBase):
 
     scripts = [get_resource("seedtime.js")]
-
-    def enable(self):
-        pass
-
-    def disable(self):
-        pass
+    debug_scripts = scripts
