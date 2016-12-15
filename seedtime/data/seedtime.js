@@ -65,7 +65,14 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
           labelWidth : 200,
           items : [
             {
-              fieldLabel : _('delay (seconds)'),
+              xtype : "checkbox",
+              fieldLabel : 'Remove torrent when stopping',
+              name : 'chk_remove_torrent',
+              checked : true,
+              id : 'rm_torrent_checkbox'
+            },
+            {
+              fieldLabel : _('Delay (seconds)'),
               name : 'delay_time',
               width : 80,
               value : 30,
@@ -73,16 +80,46 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
               maxValue : 300,
               decimalPrecision : 0,
               id : 'torrent_delay'
-            },
-            {
-              xtype : "checkbox",
-              fieldLabel : 'Remove torrent when stopping',
-              name : 'chk_remove_torrent',
-              checked : true,
-              id : 'rm_torrent_checkbox'
             }
           ]
         });
+
+        this.filter_list = new Ext.grid.GridPanel({
+            store: new Ext.data.ArrayStore({
+                fields: [
+                    {name: 'field', type: 'string'},
+                    {name: 'filter', type: 'string'},
+                    {name: 'stoptime', type: 'float'}
+                ],
+                id: 0
+            }),
+            colModel: new Ext.grid.ColumnModel({
+                defaults: {
+                    sortable: false,
+                    menuDisabled: true
+                },
+                columns: [{
+                    header: _('Field'),
+                    width: .24,
+                    dataIndex: 'field'
+                }, {
+                    header: _('Filter'),
+                    width: .50,
+                    dataIndex: 'filter'
+                }, {
+                    header: _('Stop Seed Time (days)'),
+                    width: .26,
+                    renderer: Ext.util.Format.number,
+                    dataIndex: 'stoptime'
+                }]
+            }),
+            viewConfig: {
+                forceFit: true,
+            },
+            sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        });
+
+        this.add(this.filter_list)
 
         this.removeWhenStopped = this.settings.items.get("rm_torrent_checkbox");
         this.delayTime = this.settings.items.get("torrent_delay");
