@@ -52,8 +52,6 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
             autoHeight: true
         });
 
-        // this.schedule = this.form.add(new Deluge.ux.ScheduleSelector());
-
         this.settings = this.form.add({
           xtype : 'fieldset',
           border : false,
@@ -85,46 +83,104 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
         });
 
         this.filter_list = new Ext.grid.GridPanel({
-            store: new Ext.data.ArrayStore({
-                fields: [
-                    {name: 'field', type: 'string'},
-                    {name: 'filter', type: 'string'},
-                    {name: 'stoptime', type: 'float'}
-                ],
-                id: 0
-            }),
-            colModel: new Ext.grid.ColumnModel({
-                defaults: {
-                    sortable: false,
-                    menuDisabled: true
+          store : new Ext.data.JsonStore({
+            fields : [
+              {name : 'field', type : 'string'},
+              {name : 'filter', type : 'string'},
+              {name : 'stoptime', type : 'float'},
+            ],
+            id : 0
+          }),
+          colModel : new Ext.grid.ColumnModel({
+            defaults : {sortable : false, menuDisabled : true},
+            columns : [
+              {
+                header : 'Field',
+                width : .24,
+                sortable : false,
+                dataIndex : 'field',
+                renderer : function(val) {
+                  if (val === "default") {
+                      return 'default';
+                  }
+                  else if (val === "label") {
+                      return '<select><option value="label" selected="selected">label</option><option value="tracker">tracker</option></select>';
+                  }
+                  else {
+                      return '<select><option value="label">label</option><option value="tracker" selected="selected">tracker</option></select>';
+                  }
                 },
-                columns: [{
-                    header: _('Field'),
-                    width: .24,
-                    dataIndex: 'field'
-                }, {
-                    header: _('Filter'),
-                    width: .50,
-                    dataIndex: 'filter'
-                }, {
-                    header: _('Stop Seed Time (days)'),
-                    width: .26,
-                    renderer: Ext.util.Format.number,
-                    dataIndex: 'stoptime'
-                }]
-            }),
-            viewConfig: {
-                forceFit: true,
-            },
-            sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+              },
+              {header : 'Filter', width : .50, dataIndex : 'filter'},
+              {header : 'Stop Seed Time (days)',
+                width : .26,
+                // renderer : Ext.util.Format.number,
+                dataIndex : 'stoptime'
+              },
+            ]
+          }),
+          flex: 1,
+          viewConfig : {
+            forceFit : true,
+          },
+          sm : new Ext.grid.RowSelectionModel({singleSelect : true}),
         });
 
-        this.add(this.filter_list)
+        this.filter_list.getStore().loadData( [
+            { field : "label", filter : "a.*sdf", stoptime : 5.5},
+            { field : "tracker", filter : "asev", stoptime : 6.5} ] );
+
+        this.add(this.filter_list);
+
+        this.add({
+            xtype: 'container',
+            layout: 'hbox',
+            defaultType: 'button',
+            items: [{
+                itemId: 'up',
+                text: 'Up',
+                scope: this,
+                handler: this.filterUp
+            }, {
+                itemId: 'Down',
+                // margin: '0 0 0 10',
+                text: 'Down',
+                scope: this,
+                handler: this.filterDown
+            }, {
+                itemId: 'add',
+                // margin: '0 0 0 10',
+                text: 'Add',
+                scope: this,
+                handler: this.filterAdd
+            }, {
+                itemId: 'remove',
+                // margin: '0 0 0 10',
+                text: 'Remove',
+                scope: this,
+                handler: this.filterRemove
+            }]
+            });
 
         this.removeWhenStopped = this.settings.items.get("rm_torrent_checkbox");
         this.delayTime = this.settings.items.get("torrent_delay");
-
         this.on('show', this.updateConfig, this);
+    },
+
+    filterUp: function() {
+        console.log('filterUp');
+    },
+    filterDown: function() {
+        console.log('filterDown');
+    },
+    filterAdd: function() {
+        console.log('filterAdd');
+        var store = this.filter_list.getStore();
+        store.add(new store.recordType({ field : "tracker", filter : ".*", stoptime : 1.0}));
+    },
+    filterRemove: function() {
+      var store = this.filter_list.getStore();
+        console.log('filterRemove');
     },
 
     onRender: function(ct, position) {
