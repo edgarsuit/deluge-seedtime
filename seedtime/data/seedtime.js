@@ -176,7 +176,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
     filterAdd: function() {
         console.log('filterAdd');
         var store = this.filter_list.getStore();
-        store.add(new store.recordType({ field : "tracker", filter : ".*", stoptime : 1.0}));
+        store.insert(0, new store.recordType({ field : "tracker", filter : ".*", stoptime : 1.0}));
     },
     filterRemove: function() {
       var store = this.filter_list.getStore();
