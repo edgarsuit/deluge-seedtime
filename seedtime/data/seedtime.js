@@ -31,17 +31,16 @@ Copyright:
     statement from all source files in the program, then also delete it here.
 */
 
-// TODO: reorder grid
-// TODO: remove item from grid
 // TODO: edit item in grid
-// TODO: make sure default is handled correctly
+// TODO: make sure default editing is handled correctly
 // TODO: load data to grid
 // TODO: save data from grid
-// TODO: fix layout, grid not expanding
-// TODO: layout, move buttons?
-// TODO: add min/max to stop time coloumn
 // TODO: make sure stoptime coloumn is rendered as number
-// TODO: clean up: fix formatting
+// TODO: add min/max to stop time coloumn
+// TODO: fix layout, grid not expanding
+// TODO: grid drag and drop, http://docs.sencha.com/extjs/4.0.7/#!/example/dd/dnd_grid_to_grid.html
+// TODO: layout, move buttons?
+// TODO: clean up: fix code formatting
 // TODO: clean up: probably lots of unneeded code
 
 Ext.ns('Deluge.ux');
@@ -143,6 +142,18 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
           flex: 1,
           viewConfig : {
             forceFit : true,
+              // plugins: {
+              //     ptype: 'Ext.dd.gridviewdragdrop',
+              //     // ptype: 'gridviewdragdrop',
+              //     dragGroup: 'firstGridDDGroup',
+              //     dropGroup: 'firstGridDDGroup'
+              // },
+              // listeners: {
+              //     drop: function(node, data, dropRec, dropPosition) {
+              //         var dropOn = dropRec ? ' ' + dropPosition + ' ' + dropRec.get('name') : ' on empty view';
+              //         console.log("Drag from right to left", 'Dropped ' + data.records[0].get('name') + dropOn);
+              //     }
+              // }
           },
           selModel : new Ext.grid.RowSelectionModel({singleSelect : true}),
         });
@@ -151,7 +162,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
             { field : "label", filter : "a.*sdf", stoptime : 1.5},
             { field : "tracker", filter : "b.*sdf", stoptime : 2.5},
             { field : "label", filter : "c.*sdf", stoptime : 3.5},
-            { field : "label", filter : "c.*sdf", stoptime : 4.5},
+            { field : "label", filter : "d.*sdf", stoptime : 4.5},
             { field : "default", filter : ".*", stoptime : 5.5} ] );
 
         this.filter_list.addButton({text:"Up"},this.filterUp, this);
@@ -166,19 +177,46 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
     },
 
     filterUp: function() {
-        console.log('filterUp');
+        var store = this.filter_list.getStore();
+        var sm = this.filter_list.getSelectionModel();
+        var selected_rec = sm.getSelected();
+        var selected_indx = store.indexOf(selected_rec);
+
+        if (selected_indx > 0 && selected_indx < store.getCount()-1 ) {
+          store.remove(selected_rec);
+          store.insert(selected_indx-1, selected_rec);
+          sm.selectRow(selected_indx-1);
+        }
     },
+
     filterDown: function() {
-        console.log('filterDown');
+        var store = this.filter_list.getStore();
+        var sm = this.filter_list.getSelectionModel();
+        var selected_rec = sm.getSelected();
+        var selected_indx = store.indexOf(selected_rec);
+
+        if (selected_indx < store.getCount()-2 ) {
+          store.remove(selected_rec);
+          store.insert(selected_indx+1, selected_rec);
+          sm.selectRow(selected_indx+1);
+        }
     },
+
     filterAdd: function() {
-        console.log('filterAdd');
         var store = this.filter_list.getStore();
         store.insert(0, new store.recordType({ field : "tracker", filter : ".*", stoptime : 1.0}));
     },
+
     filterRemove: function() {
       var store = this.filter_list.getStore();
-        console.log('filterRemove');
+        var store = this.filter_list.getStore();
+        var sm = this.filter_list.getSelectionModel();
+        var selected_rec = sm.getSelected();
+        var selected_indx = store.indexOf(selected_rec);
+
+        if (selected_indx < store.getCount()-1 ) {
+          store.remove(selected_rec);
+        }
     },
 
     onRender: function(ct, position) {
