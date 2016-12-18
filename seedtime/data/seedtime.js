@@ -31,6 +31,19 @@ Copyright:
     statement from all source files in the program, then also delete it here.
 */
 
+// TODO: reorder grid
+// TODO: remove item from grid
+// TODO: edit item in grid
+// TODO: make sure default is handled correctly
+// TODO: load data to grid
+// TODO: save data from grid
+// TODO: fix layout, grid not expanding
+// TODO: layout, move buttons?
+// TODO: add min/max to stop time coloumn
+// TODO: make sure stoptime coloumn is rendered as number
+// TODO: clean up: fix formatting
+// TODO: clean up: probably lots of unneeded code
+
 Ext.ns('Deluge.ux');
 
 Ext.ns('Deluge.ux.preferences');
@@ -45,18 +58,24 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
     initComponent: function() {
         Deluge.ux.preferences.SeedTimePage.superclass.initComponent.call(this);
 
+        // this.vbox = this.add({
+        //     xtype: 'container',
+        //     layout: 'vbox',
+        //     defaultType: 'button'
+        //   });
+
         this.form = this.add({
             xtype: 'form',
             layout: 'form',
             border: false,
-            autoHeight: true
+            // autoHeight: true
         });
 
         this.settings = this.form.add({
           xtype : 'fieldset',
           border : false,
           title : _('Settings'),
-          autoHeight : true,
+          // autoHeight : true,
           defaultType : 'spinnerfield',
           defaults : {minValue : -1, maxValue : 99999},
           style : 'margin-top: 5px; margin-bottom: 0px; padding-bottom: 0px;',
@@ -83,6 +102,8 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
         });
 
         this.filter_list = new Ext.grid.GridPanel({
+          autoHeight : true,
+          // autoScroll: true,
           store : new Ext.data.JsonStore({
             fields : [
               {name : 'field', type : 'string'},
@@ -123,44 +144,21 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
           viewConfig : {
             forceFit : true,
           },
-          sm : new Ext.grid.RowSelectionModel({singleSelect : true}),
+          selModel : new Ext.grid.RowSelectionModel({singleSelect : true}),
         });
 
         this.filter_list.getStore().loadData( [
-            { field : "label", filter : "a.*sdf", stoptime : 5.5},
-            { field : "tracker", filter : "asev", stoptime : 6.5} ] );
+            { field : "label", filter : "a.*sdf", stoptime : 1.5},
+            { field : "tracker", filter : "b.*sdf", stoptime : 2.5},
+            { field : "label", filter : "c.*sdf", stoptime : 3.5},
+            { field : "label", filter : "c.*sdf", stoptime : 4.5},
+            { field : "default", filter : ".*", stoptime : 5.5} ] );
 
-        this.add(this.filter_list);
-
-        this.add({
-            xtype: 'container',
-            layout: 'hbox',
-            defaultType: 'button',
-            items: [{
-                itemId: 'up',
-                text: 'Up',
-                scope: this,
-                handler: this.filterUp
-            }, {
-                itemId: 'Down',
-                // margin: '0 0 0 10',
-                text: 'Down',
-                scope: this,
-                handler: this.filterDown
-            }, {
-                itemId: 'add',
-                // margin: '0 0 0 10',
-                text: 'Add',
-                scope: this,
-                handler: this.filterAdd
-            }, {
-                itemId: 'remove',
-                // margin: '0 0 0 10',
-                text: 'Remove',
-                scope: this,
-                handler: this.filterRemove
-            }]
-            });
+        this.filter_list.addButton({text:"Up"},this.filterUp, this);
+        this.filter_list.addButton({text:"Down"},this.filterDown, this);
+        this.filter_list.addButton({text:"Add"},this.filterAdd, this);
+        this.filter_list.addButton({text:"Remove"},this.filterRemove, this);
+        this.form.add(this.filter_list);
 
         this.removeWhenStopped = this.settings.items.get("rm_torrent_checkbox");
         this.delayTime = this.settings.items.get("torrent_delay");
@@ -188,6 +186,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
         this.form.layout = new Ext.layout.FormLayout();
         this.form.layout.setContainer(this);
         this.form.doLayout();
+        // this.vbox.doLayout();
     },
 
     onApply: function() {
