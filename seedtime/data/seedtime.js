@@ -52,29 +52,24 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
     border: false,
     title: _('SeedTime'),
     header: false,
-    layout: 'fit',
+    layout: {
+        type: 'vbox',
+        align: 'stretch'
+    },
 
     initComponent: function() {
         Deluge.ux.preferences.SeedTimePage.superclass.initComponent.call(this);
-
-        // this.vbox = this.add({
-        //     xtype: 'container',
-        //     layout: 'vbox',
-        //     defaultType: 'button'
-        //   });
 
         this.form = this.add({
             xtype: 'form',
             layout: 'form',
             border: false,
-            // autoHeight: true
         });
 
         this.settings = this.form.add({
           xtype : 'fieldset',
           border : false,
           title : _('Settings'),
-          // autoHeight : true,
           defaultType : 'spinnerfield',
           defaults : {minValue : -1, maxValue : 99999},
           style : 'margin-top: 5px; margin-bottom: 0px; padding-bottom: 0px;',
@@ -100,9 +95,9 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
           ]
         });
 
-        this.filter_list = new Ext.grid.GridPanel({
-          autoHeight : true,
-          // autoScroll: true,
+        this.filter_list = new Ext.grid.EditorGridPanel({
+          height: 300,  //TODO: instead, expand height automatically
+          flex: 1,
           store : new Ext.data.JsonStore({
             fields : [
               {name : 'field', type : 'string'},
@@ -131,30 +126,16 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
                   }
                 },
               },
-              {header : 'Filter', width : .50, dataIndex : 'filter'},
-              {header : 'Stop Seed Time (days)',
+              { header : 'Filter', width : .50, dataIndex : 'filter',xtype: 'gridcolumn',},
+              { xtype: 'numbercolumn',
+                header : 'Stop Seed Time (days)',
                 width : .26,
                 // renderer : Ext.util.Format.number,
                 dataIndex : 'stoptime'
               },
             ]
           }),
-          flex: 1,
-          viewConfig : {
-            forceFit : true,
-              // plugins: {
-              //     ptype: 'Ext.dd.gridviewdragdrop',
-              //     // ptype: 'gridviewdragdrop',
-              //     dragGroup: 'firstGridDDGroup',
-              //     dropGroup: 'firstGridDDGroup'
-              // },
-              // listeners: {
-              //     drop: function(node, data, dropRec, dropPosition) {
-              //         var dropOn = dropRec ? ' ' + dropPosition + ' ' + dropRec.get('name') : ' on empty view';
-              //         console.log("Drag from right to left", 'Dropped ' + data.records[0].get('name') + dropOn);
-              //     }
-              // }
-          },
+          viewConfig : {forceFit : true},
           selModel : new Ext.grid.RowSelectionModel({singleSelect : true}),
         });
 
