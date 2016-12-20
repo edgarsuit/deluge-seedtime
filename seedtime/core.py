@@ -164,7 +164,7 @@ class Core(CorePluginBase):
 
     @export
     def set_torrent(self, torrent_id , stop_time):
-        if stop_time is None:
+        if stop_time is None or stop_time < 0:
             del self.torrent_stop_times[torrent_id]
         else:
             self.torrent_stop_times[torrent_id] = stop_time

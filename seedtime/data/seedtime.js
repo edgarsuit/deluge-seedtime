@@ -32,9 +32,8 @@ Copyright:
 */
 
 // TODO: return correct field value, (currently always returns tracker)
-// TODO: add seed time columns to main torrent grid
-// TODO: add right click seed time context menu to main torrent grid
-// TODO: edit stop seed time from coloumn in main torrent grid
+// TODO: set seed time columns format to time
+// TODO: add custom seed time menu for context menu custom option
 // TODO: disable editing of default filter cell
 // TODO: fix layout, grid automatic height
 // TODO: layout, resize buttons?
@@ -53,6 +52,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
         type: 'vbox',
         align: 'stretch'
     },
+    hasReadConfig : false,
 
     initComponent: function() {
         Deluge.ux.preferences.SeedTimePage.superclass.initComponent.call(this);
@@ -141,10 +141,10 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
           selModel : new Ext.grid.RowSelectionModel({singleSelect : true, moveEditorOnEnter : false}),
         });
 
-        this.filter_list.addButton({text:"Up"},this.filterUp, this);
-        this.filter_list.addButton({text:"Down"},this.filterDown, this);
-        this.filter_list.addButton({text:"Add"},this.filterAdd, this);
-        this.filter_list.addButton({text:"Remove"},this.filterRemove, this);
+        this.filter_list.addButton({text:"Up", iconCls: 'icon-up'}, this.filterUp, this);
+        this.filter_list.addButton({text:"Down", iconCls: 'icon-down'}, this.filterDown, this);
+        this.filter_list.addButton({text:"Add", iconCls: 'icon-add'}, this.filterAdd, this);
+        this.filter_list.addButton({text:"Remove", iconCls: 'icon-remove'}, this.filterRemove, this);
         this.form.add(this.filter_list);
 
         this.removeWhenStopped = this.settings.items.get("rm_torrent_checkbox");
@@ -200,22 +200,24 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
     },
 
     onApply: function() {
-        //TODO: got to be a better way to get json out of the store, JsonWriter?
-        var filter_items = []
-        var items = this.filter_list.getStore().data.items;
-        for(i=0; i < items.length; i++) {
-            filter_items.push(items[i].data);
+        if(this.hasReadConfig) {
+            //TODO: got to be a better way to get json out of the store, JsonWriter?
+            var filter_items = []
+            var items = this.filter_list.getStore().data.items;
+            for(i=0; i < items.length; i++) {
+                filter_items.push(items[i].data);
+            }
+            //TODO: remove this when default filter can't be edited
+            filter_items[filter_items.length-1].filter = ".*";
+
+            // build settings object
+            var config = {};
+            config['remove_torrent'] = this.removeWhenStopped.getValue();
+            config['filter_list'] = filter_items;
+            config['delay_time'] = this.delayTime.getValue();
+
+            deluge.client.seedtime.set_config(config);
         }
-        //TODO: remove this when default filter can't be edited
-        filter_items[filter_items.length-1].filter = ".*";
-
-        // build settings object
-        var config = {};
-        config['remove_torrent'] = this.removeWhenStopped.getValue();
-        config['filter_list'] = filter_items;
-        config['delay_time'] = this.delayTime.getValue();
-
-        deluge.client.seedtime.set_config(config);
     },
 
     onOk: function() {
@@ -228,6 +230,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
                 this.removeWhenStopped.setValue(config['remove_torrent']);
                 this.filter_list.getStore().loadData(config['filter_list']);
                 this.delayTime.setValue(config['delay_time']);
+                this.hasReadConfig = true;
             },
             scope: this
         });
@@ -237,13 +240,77 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
 SeedTimePlugin = Ext.extend(Deluge.Plugin, {
 
     name: 'SeedTime',
+    
+    createMenu: function() {
+        menuTimes = [1, 2, 3, 7, 14, 30],
+        itemslist = [{  text: _('Never'),
+                        stoptime : -1,
+                        handler: this.setStoptime,
+                        scope: this
+                }];
+        for(indx=0; indx < menuTimes.length; indx++) {
+            itemslist.push({  text: _(menuTimes[indx] + ' Days'),
+                        stoptime : menuTimes[indx],
+                        handler: this.setStoptime,
+                        scope: this
+                    });
+        }
+        itemslist.push({text: _('Custom'),
+                        stoptime : 1,
+                        handler: this.setStoptime,
+                        scope: this
+                        });
+        this.torrentMenu = new Ext.menu.Menu({items: itemslist});
+    },
 
+    setStoptime: function(item, e) {
+        if (item.text === 'Custom') {
+            //TODO: show custom menu
+            //TODO: set stop time to number
+            console.log("custom stop time");
+        }
+        
+        var ids = deluge.torrents.getSelectedIds();
+        Ext.each(ids, function(id, i) {
+            if (ids.length == i + 1) {
+                deluge.client.seedtime.set_torrent(id, item.stoptime, {
+                    success: function() {
+                        deluge.ui.update();
+                    }
+                });
+            } else {
+                deluge.client.seedtime.set_torrent(id, item.stoptime);
+            }
+        });
+    },
+    
     onDisable: function() {
         deluge.preferences.removePage(this.prefsPage);
+        deluge.menus.torrent.remove(this.tmSep);
+        deluge.menus.torrent.remove(this.tm);
+        this.deregisterTorrentStatus('seeding_time');
+        this.deregisterTorrentStatus('seed_stop_time');
+        this.deregisterTorrentStatus('seed_time_remaining');
     },
 
     onEnable: function() {
+        //preference page
         this.prefsPage = deluge.preferences.addPage(new Deluge.ux.preferences.SeedTimePage());
+        
+        //context menu
+        this.createMenu();
+        this.tmSep = deluge.menus.torrent.add({
+            xtype: 'menuseparator'
+        });
+        this.tm = deluge.menus.torrent.add({
+            text: _('Seed Stop Time'),
+            menu: this.torrentMenu
+        });
+        
+        // status columns
+        this.registerTorrentStatus('seeding_time', _('Seed Time'));
+        this.registerTorrentStatus('seed_stop_time', _('Stop Seed Time'));
+        this.registerTorrentStatus('seed_time_remaining', _('Remaining Seed Time'));
     }
 });
 Deluge.registerPlugin('SeedTime', SeedTimePlugin);
