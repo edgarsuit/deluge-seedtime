@@ -48,7 +48,8 @@ from deluge.core.rpcserver import export
 
 CONFIG_DEFAULT = {
     "remove_torrent": False,
-    "filter_list": [{'field': 'default', 'filter': ".*", 'stop_time': 7.0}],
+    "default_stoptime": 1.0,
+    "filter_list": [], #example: {'field': 'tracker', 'filter': ".*", 'stop_time': 7.0}],
     "torrent_stop_times": {},  # torrent_id: stop_time (in hours)
     "delay_time": 1  # delay between adding torrent and setting initial seed time (in seconds)
 }

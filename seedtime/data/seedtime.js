@@ -32,6 +32,8 @@ Copyright:
 */
 
 // TODO: move default to field, in gtk too
+// TODO: tooltip about default setting to zero to disable
+// TODO: add tooltips
 // TODO: disable editing of default filter cell
 // TODO: fix perferance page layout, filter list grid automatic height
 // TODO: fix perferance page layout, resize buttons
@@ -86,6 +88,16 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
               maxValue : 300,
               decimalPrecision : 0,
               id : 'torrent_delay'
+            },
+            {
+              fieldLabel : _('Default stop time (days)'),
+              name : 'default_time',
+              width : 80,
+              value : 30,
+              minValue : 0,
+              maxValue : 999,
+              decimalPrecision : 2,
+              id : 'default_stoptime'
             }
           ]
         });
@@ -159,6 +171,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
         this.filter_list.addButton({text:"Remove", iconCls: 'icon-remove'}, this.filterRemove, this);
         this.form.add(this.filter_list);
 
+        this.defaultStoptime = this.settings.items.get("default_stoptime");
         this.removeWhenStopped = this.settings.items.get("rm_torrent_checkbox");
         this.delayTime = this.settings.items.get("torrent_delay");
         this.on('show', this.updateConfig, this);
@@ -170,7 +183,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
         var selected_rec = sm.getSelected();
         var selected_indx = store.indexOf(selected_rec);
 
-        if (selected_indx > 0 && selected_indx < store.getCount()-1 ) {
+        if (selected_indx > 0 ) {
           store.remove(selected_rec);
           store.insert(selected_indx-1, selected_rec);
           sm.selectRow(selected_indx-1);
@@ -183,7 +196,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
         var selected_rec = sm.getSelected();
         var selected_indx = store.indexOf(selected_rec);
 
-        if (selected_indx < store.getCount()-2 ) {
+        if (selected_indx < store.getCount()-1 ) {
           store.remove(selected_rec);
           store.insert(selected_indx+1, selected_rec);
           sm.selectRow(selected_indx+1);
@@ -196,15 +209,9 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
     },
 
     filterRemove: function() {
-      var store = this.filter_list.getStore();
         var store = this.filter_list.getStore();
-        var sm = this.filter_list.getSelectionModel();
-        var selected_rec = sm.getSelected();
-        var selected_indx = store.indexOf(selected_rec);
-
-        if (selected_indx < store.getCount()-1 ) {
-          store.remove(selected_rec);
-        }
+        var selected_rec = this.filter_list.getSelectionModel().getSelected();
+        store.remove(selected_rec);
     },
 
     onRender: function(ct, position) {
@@ -227,7 +234,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
             config['remove_torrent'] = this.removeWhenStopped.getValue();
             config['filter_list'] = filter_items;
             config['delay_time'] = this.delayTime.getValue();
-
+            config['default_stoptime'] = this.defaultStoptime.getValue();
             deluge.client.seedtime.set_config(config);
         }
     },
@@ -242,6 +249,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
                 this.removeWhenStopped.setValue(config['remove_torrent']);
                 this.filter_list.getStore().loadData(config['filter_list']);
                 this.delayTime.setValue(config['delay_time']);
+                this.defaultStoptime.setValue(config['default_stoptime']);
                 this.hasReadConfig = true;
             },
             scope: this
