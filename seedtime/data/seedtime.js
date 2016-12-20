@@ -31,13 +31,13 @@ Copyright:
     statement from all source files in the program, then also delete it here.
 */
 
+// TODO: return correct field value, (currently always returns tracker)
+// TODO: add seed time columns to main torrent grid
+// TODO: add right click seed time context menu to main torrent grid
+// TODO: edit stop seed time from coloumn in main torrent grid
 // TODO: disable editing of default filter cell
-// TODO: load data to grid
-// TODO: save data from grid
-// TODO: make sure stoptime coloumn is rendered as number
-// TODO: add min/max to stop time coloumn
 // TODO: fix layout, grid automatic height
-// TODO: layout, move buttons?
+// TODO: layout, resize buttons?
 // TODO: clean up: fix code formatting
 // TODO: clean up: probably lots of unneeded code
 
@@ -46,7 +46,6 @@ Ext.ns('Deluge.ux');
 Ext.ns('Deluge.ux.preferences');
 
 Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
-
     border: false,
     title: _('SeedTime'),
     header: false,
@@ -94,7 +93,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
         });
 
         this.filter_list = new Ext.grid.EditorGridPanel({
-          height: 300,  //TODO: instead, expand height automatically
+          height: 300,  //TODO: instead of hard coding, expand height automatically
           flex: 1,
           store : new Ext.data.JsonStore({
             fields : [
@@ -139,15 +138,8 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
             ]
           }),
           viewConfig : {forceFit : true},
-          selModel : new Ext.grid.RowSelectionModel({singleSelect : true}),
+          selModel : new Ext.grid.RowSelectionModel({singleSelect : true, moveEditorOnEnter : false}),
         });
-
-        this.filter_list.getStore().loadData( [
-            { field : "label", filter : "a.*sdf", stoptime : 1.5},
-            { field : "tracker", filter : "b.*sdf", stoptime : 2.5},
-            { field : "label", filter : "c.*sdf", stoptime : 3.5},
-            { field : "label", filter : "d.*sdf", stoptime : 4.5},
-            { field : "default", filter : ".*", stoptime : 5.5} ] );
 
         this.filter_list.addButton({text:"Up"},this.filterUp, this);
         this.filter_list.addButton({text:"Down"},this.filterDown, this);
@@ -208,16 +200,22 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
     },
 
     onApply: function() {
+        //TODO: got to be a better way to get json out of the store, JsonWriter?
+        var filter_items = []
+        var items = this.filter_list.getStore().data.items;
+        for(i=0; i < items.length; i++) {
+            filter_items.push(items[i].data);
+        }
+        //TODO: remove this when default filter can't be edited
+        filter_items[filter_items.length-1].filter = ".*";
+
         // build settings object
         var config = {};
-
         config['remove_torrent'] = this.removeWhenStopped.getValue();
-        // config['filter_list'] = [];//this.store.data;
+        config['filter_list'] = filter_items;
         config['delay_time'] = this.delayTime.getValue();
 
-        console.log(config);
-
-        deluge.client.seedtime.set_config(this.initial_config);
+        deluge.client.seedtime.set_config(config);
     },
 
     onOk: function() {
@@ -227,9 +225,8 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
     updateConfig: function() {
         deluge.client.seedtime.get_config({
             success: function(config) {
-                this.initial_config = config
                 this.removeWhenStopped.setValue(config['remove_torrent']);
-                // this.store.data = config['filter_list'];
+                this.filter_list.getStore().loadData(config['filter_list']);
                 this.delayTime.setValue(config['delay_time']);
             },
             scope: this
