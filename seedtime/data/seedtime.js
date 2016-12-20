@@ -33,10 +33,9 @@ Copyright:
 
 // TODO: return correct field value, (currently always returns tracker)
 // TODO: set seed time columns format to time
-// TODO: add custom seed time menu for context menu custom option
 // TODO: disable editing of default filter cell
-// TODO: fix layout, grid automatic height
-// TODO: layout, resize buttons?
+// TODO: fix perferance page layout, filter list grid automatic height
+// TODO: fix perferance page layout, resize buttons
 // TODO: clean up: fix code formatting
 // TODO: clean up: probably lots of unneeded code
 
@@ -237,6 +236,64 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
     }
 });
 
+Deluge.ux.CustomSeedtimeWindow = Ext.extend(Ext.Window, {
+
+    title: _('Custom Stop Time'),
+    width: 300,
+    height: 100,
+
+    initComponent: function() {
+        Deluge.ux.CustomSeedtimeWindow.superclass.initComponent.call(this);
+        this.addButton(_('Cancel'), this.onCancelClick, this);
+        this.addButton(_('Ok'), this.onOkClick, this);
+
+        this.form = this.add({
+            xtype: 'form',
+            height: 35,
+            baseCls: 'x-plain',
+            bodyStyle:'padding:5px 5px 0',
+            defaultType: 'numberfield',
+            labelWidth: 220,
+            items: [{
+                    fieldLabel: _('Stop Time (Days)'),
+                    name: 'stoptime',
+                    allowBlank: false,
+                    maxValue : 365.0,
+                    minValue : 0.01,
+                    width: 50,
+                    listeners: {
+                        'specialkey': {
+                            fn: function(field, e) {
+                                if (e.getKey() == 13) this.onOkClick();
+                            },
+                            scope: this
+                        }
+                    }
+                }]
+        });
+    },
+
+    onCancelClick: function() {
+        this.hide();
+    },
+
+    onOkClick: function() {
+        this.item.stoptime = this.form.getForm().findField('stoptime').getValue();
+        this.setStoptime(this.item, this.e)
+        this.hide();
+    },
+
+    onHide: function(comp) {
+        Deluge.ux.CustomSeedtimeWindow.superclass.onHide.call(this, comp);
+        this.form.getForm().reset();
+    },
+
+    onShow: function(comp) {
+        Deluge.ux.CustomSeedtimeWindow.superclass.onShow.call(this, comp);
+        this.form.getForm().findField('stoptime').focus(false, 150);
+    }
+});
+
 SeedTimePlugin = Ext.extend(Deluge.Plugin, {
 
     name: 'SeedTime',
@@ -257,19 +314,13 @@ SeedTimePlugin = Ext.extend(Deluge.Plugin, {
         }
         itemslist.push({text: _('Custom'),
                         stoptime : 1,
-                        handler: this.setStoptime,
+                        handler: this.setCustomStoptime,
                         scope: this
                         });
         this.torrentMenu = new Ext.menu.Menu({items: itemslist});
     },
 
     setStoptime: function(item, e) {
-        if (item.text === 'Custom') {
-            //TODO: show custom menu
-            //TODO: set stop time to number
-            console.log("custom stop time");
-        }
-        
         var ids = deluge.torrents.getSelectedIds();
         Ext.each(ids, function(id, i) {
             if (ids.length == i + 1) {
@@ -282,6 +333,16 @@ SeedTimePlugin = Ext.extend(Deluge.Plugin, {
                 deluge.client.seedtime.set_torrent(id, item.stoptime);
             }
         });
+    },
+    
+    setCustomStoptime: function(item, e) {
+        if (!this.customTimeWindow) {
+            this.customTimeWindow = new Deluge.ux.CustomSeedtimeWindow();
+            this.customTimeWindow.setStoptime = this.setStoptime;
+        }
+        this.customTimeWindow.item = item;
+        this.customTimeWindow.e = e;
+        this.customTimeWindow.show();
     },
     
     onDisable: function() {
