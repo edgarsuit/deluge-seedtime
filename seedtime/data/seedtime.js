@@ -369,10 +369,12 @@ SeedTimePlugin = Ext.extend(Deluge.Plugin, {
         
         ftimewithnull = function(n) {
                 if(n==null) {return "";}
-                else {return ftime(n);}
+                else if(n == 0) {n=0.1} // avoid 0 being infinite
+                return Deluge.Formatters.timeRemaining(n);
             };
         // status columns
-        this.registerTorrentStatus('seeding_time', _('Seed Time'));
+        this.registerTorrentStatus('seeding_time', _('Seed Time'),
+            { colCfg : { sortable : true, renderer : ftimewithnull}});
         this.registerTorrentStatus('seed_stop_time', _('Stop Seed Time'),
             { colCfg : { sortable : true, renderer : ftimewithnull}});
         this.registerTorrentStatus('seed_time_remaining', _('Remaining Seed Time'),
