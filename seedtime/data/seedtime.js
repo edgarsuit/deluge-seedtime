@@ -31,7 +31,7 @@ Copyright:
     statement from all source files in the program, then also delete it here.
 */
 
-// TODO: return correct field value, (currently always returns tracker)
+// TODO: move default to field, in gtk too
 // TODO: disable editing of default filter cell
 // TODO: fix perferance page layout, filter list grid automatic height
 // TODO: fix perferance page layout, resize buttons
@@ -89,6 +89,29 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
             }
           ]
         });
+        
+        // create reusable renderer
+        Ext.util.Format.comboRenderer = function(combo){
+            return function(value){
+                var record = combo.findRecord(combo.valueField, value);
+                return record ? record.get(combo.displayField) : combo.valueNotFoundText;
+            }
+        };
+        
+        // create the combo instance
+        var combo = new Ext.form.ComboBox({
+            editable:false,
+            triggerAction: 'all',
+            lazyRender:true,
+            mode: 'local',
+            store: new Ext.data.ArrayStore({
+                id: 0,
+                fields: ['myId', 'displayText'],
+                data: [[1, 'label'], [2, 'tracker']]
+            }),
+            valueField: 'displayText',
+            displayField: 'displayText'
+        });
 
         this.filter_list = new Ext.grid.EditorGridPanel({
           height: 300,  //TODO: instead of hard coding, expand height automatically
@@ -109,17 +132,8 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
                 width : .24,
                 sortable : false,
                 dataIndex : 'field',
-                renderer : function(val) {
-                  if (val === "default") {
-                      return 'default';
-                  }
-                  else if (val === "label") {
-                      return '<select><option value="label" selected="selected">label</option><option value="tracker">tracker</option></select>';
-                  }
-                  else {
-                      return '<select><option value="label">label</option><option value="tracker" selected="selected">tracker</option></select>';
-                  }
-                },
+                editor : combo,
+                renderer : Ext.util.Format.comboRenderer(combo),
               },
               { header : 'Filter',
                 width : .50,
