@@ -31,14 +31,12 @@ Copyright:
     statement from all source files in the program, then also delete it here.
 */
 
-// TODO: edit item in grid
-// TODO: make sure default editing is handled correctly
+// TODO: disable editing of default filter cell
 // TODO: load data to grid
 // TODO: save data from grid
 // TODO: make sure stoptime coloumn is rendered as number
 // TODO: add min/max to stop time coloumn
-// TODO: fix layout, grid not expanding
-// TODO: grid drag and drop, http://docs.sencha.com/extjs/4.0.7/#!/example/dd/dnd_grid_to_grid.html
+// TODO: fix layout, grid automatic height
 // TODO: layout, move buttons?
 // TODO: clean up: fix code formatting
 // TODO: clean up: probably lots of unneeded code
@@ -126,11 +124,16 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
                   }
                 },
               },
-              { header : 'Filter', width : .50, dataIndex : 'filter',xtype: 'gridcolumn',},
-              { xtype: 'numbercolumn',
-                header : 'Stop Seed Time (days)',
+              { header : 'Filter',
+                width : .50,
+                dataIndex : 'filter',
+                editor : {xtype : 'textfield' },
+              },
+              { header : 'Stop Seed Time (days)',
                 width : .26,
-                // renderer : Ext.util.Format.number,
+                editor : { xtype : 'numberfield',
+                           maxValue : 365.0,
+                           minValue : 0.01 },
                 dataIndex : 'stoptime'
               },
             ]
@@ -202,10 +205,6 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
 
     onRender: function(ct, position) {
         Deluge.ux.preferences.SeedTimePage.superclass.onRender.call(this, ct, position);
-        this.form.layout = new Ext.layout.FormLayout();
-        this.form.layout.setContainer(this);
-        this.form.doLayout();
-        // this.vbox.doLayout();
     },
 
     onApply: function() {
