@@ -32,7 +32,6 @@ Copyright:
 */
 
 // TODO: return correct field value, (currently always returns tracker)
-// TODO: set seed time columns format to time
 // TODO: disable editing of default filter cell
 // TODO: fix perferance page layout, filter list grid automatic height
 // TODO: fix perferance page layout, resize buttons
@@ -368,10 +367,16 @@ SeedTimePlugin = Ext.extend(Deluge.Plugin, {
             menu: this.torrentMenu
         });
         
+        ftimewithnull = function(n) {
+                if(n==null) {return "";}
+                else {return ftime(n);}
+            };
         // status columns
         this.registerTorrentStatus('seeding_time', _('Seed Time'));
-        this.registerTorrentStatus('seed_stop_time', _('Stop Seed Time'));
-        this.registerTorrentStatus('seed_time_remaining', _('Remaining Seed Time'));
+        this.registerTorrentStatus('seed_stop_time', _('Stop Seed Time'),
+            { colCfg : { sortable : true, renderer : ftimewithnull}});
+        this.registerTorrentStatus('seed_time_remaining', _('Remaining Seed Time'),
+            { colCfg : { sortable : true, renderer : ftimewithnull}});
     }
 });
 Deluge.registerPlugin('SeedTime', SeedTimePlugin);
