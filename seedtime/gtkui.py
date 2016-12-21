@@ -161,8 +161,8 @@ class GtkUI(GtkPluginBase):
         config = {
             "remove_torrent": self.glade.get_widget("chk_remove_torrent").get_active(),
             "filter_list": list({'field': row[0], 'filter': row[1], 'stop_time': row[2]} for row in self.liststore),
-            "delay_time": self.glade.get_widget("delay_time").get_value_as_int()
-            "default_stop_time": self.glade.get_widget("default_stop_time").get_value_as_float()
+            "delay_time": self.glade.get_widget("delay_time").get_value_as_int(),
+            "default_stop_time": self.glade.get_widget("default_stop_time").get_value_as_float(),
         }
         client.seedtime.set_config(config)
 
@@ -210,11 +210,9 @@ class GtkUI(GtkPluginBase):
 
         for path in paths:
             itr = model.get_iter(path)
-            if path[0] == 0:
-                return
-            else:
+            if path[0] > 0:
                 previousRow = model.get_iter(path[0]-1)
-            model.move_before(itr, previousRow)
+                model.move_before(itr, previousRow)
 
     def btnDownCallback(self, widget):
         selection = self.treeview.get_selection()
@@ -222,11 +220,9 @@ class GtkUI(GtkPluginBase):
 
         for path in paths:
             itr = model.get_iter(path)
-            if path[0] >= len(model)-1:
-                return
-            else:
+            if path[0] < len(model)-1:
                 nextRow = model.get_iter(path[0]+1)
-            model.move_after(itr, nextRow)
+                model.move_after(itr, nextRow)
 
 class SeedTimeMenu(gtk.MenuItem):
     def __init__(self):
