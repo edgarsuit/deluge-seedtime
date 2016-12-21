@@ -31,14 +31,11 @@ Copyright:
     statement from all source files in the program, then also delete it here.
 */
 
-// TODO: move default to field, in gtk too
-// TODO: tooltip about default setting to zero to disable
-// TODO: add tooltips
-// TODO: disable editing of default filter cell
+// TODO: gtk not working?
+// TODO: add same tooltips as gtk
 // TODO: fix perferance page layout, filter list grid automatic height
 // TODO: fix perferance page layout, resize buttons
 // TODO: clean up: fix code formatting
-// TODO: clean up: probably lots of unneeded code
 
 Ext.ns('Deluge.ux');
 
@@ -80,16 +77,6 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
               id : 'rm_torrent_checkbox'
             },
             {
-              fieldLabel : _('Delay (seconds)'),
-              name : 'delay_time',
-              width : 80,
-              value : 30,
-              minValue : 1,
-              maxValue : 300,
-              decimalPrecision : 0,
-              id : 'torrent_delay'
-            },
-            {
               fieldLabel : _('Default stop time (days)'),
               name : 'default_stop_time',
               width : 80,
@@ -98,6 +85,16 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
               maxValue : 999,
               decimalPrecision : 2,
               id : 'default_stop_time'
+            },
+            {
+              fieldLabel : _('Delay (seconds)'),
+              name : 'delay_time',
+              width : 80,
+              value : 30,
+              minValue : 1,
+              maxValue : 300,
+              decimalPrecision : 0,
+              id : 'torrent_delay'
             }
           ]
         });
@@ -226,8 +223,6 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
             for(i=0; i < items.length; i++) {
                 filter_items.push(items[i].data);
             }
-            //TODO: remove this when default filter can't be edited
-            filter_items[filter_items.length-1].filter = ".*";
 
             // build settings object
             var config = {};
