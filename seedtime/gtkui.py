@@ -82,13 +82,9 @@ class GtkUI(GtkPluginBase):
         self.btnDown = self.glade.get_widget("btnDown")
         self.btnDown.connect("clicked", self.btnDownCallback)
 
-        # cell by cell renderer callback, changes field and filter to not editable
-        # if the current row is the default filter
+        # cell by cell renderer callback, changes field and filter to editable
         def rowRendererCb(column, cell, model, itr):
-            if model.get_value(itr, 0) == 'default':
-                cell.set_property('editable', False)
-            else:
-                cell.set_property('editable', True)
+            cell.set_property('editable', True)
 
         # creating the treeview,and add columns
         self.treeview = gtk.TreeView()
@@ -166,6 +162,7 @@ class GtkUI(GtkPluginBase):
             "remove_torrent": self.glade.get_widget("chk_remove_torrent").get_active(),
             "filter_list": list({'field': row[0], 'filter': row[1], 'stop_time': row[2]} for row in self.liststore),
             "delay_time": self.glade.get_widget("delay_time").get_value_as_int()
+            "default_stop_time": self.glade.get_widget("default_stop_time").get_value_as_float()
         }
         client.seedtime.set_config(config)
 
@@ -177,6 +174,7 @@ class GtkUI(GtkPluginBase):
         log.debug('cb get config seedtime')
         self.glade.get_widget("chk_remove_torrent").set_active(config["remove_torrent"])
         self.glade.get_widget("delay_time").set_value(config["delay_time"])
+        self.glade.get_widget("default_stop_time").set_value(config["default_stop_time"])
 
         # populate filter table
         self.liststore = gtk.ListStore(str, str, float)
@@ -204,8 +202,7 @@ class GtkUI(GtkPluginBase):
         # Get the TreeIter instance for each path
         for path in paths:
             itr = model.get_iter(path)
-            if model.get_value(itr, 0) != 'default':
-                model.remove(itr)
+            model.remove(itr)
 
     def btnUpCallback(self, widget):
         selection = self.treeview.get_selection()
@@ -213,13 +210,11 @@ class GtkUI(GtkPluginBase):
 
         for path in paths:
             itr = model.get_iter(path)
-            # Don't move the default filter
-            if model.get_value(itr, 0) != 'default':
-                if path[0] == 0:
-                    return
-                else:
-                    previousRow = model.get_iter(path[0]-1)
-                model.move_before(itr, previousRow)
+            if path[0] == 0:
+                return
+            else:
+                previousRow = model.get_iter(path[0]-1)
+            model.move_before(itr, previousRow)
 
     def btnDownCallback(self, widget):
         selection = self.treeview.get_selection()
@@ -227,13 +222,11 @@ class GtkUI(GtkPluginBase):
 
         for path in paths:
             itr = model.get_iter(path)
-            # Don't move the default filter
-            if model.get_value(itr, 0) != 'default':
-                if path[0] >= len(model)-2:
-                    return
-                else:
-                    nextRow = model.get_iter(path[0]+1)
-                model.move_after(itr, nextRow)
+            if path[0] >= len(model)-1:
+                return
+            else:
+                nextRow = model.get_iter(path[0]+1)
+            model.move_after(itr, nextRow)
 
 class SeedTimeMenu(gtk.MenuItem):
     def __init__(self):

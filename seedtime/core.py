@@ -47,11 +47,11 @@ import deluge.configmanager
 from deluge.core.rpcserver import export
 
 CONFIG_DEFAULT = {
+    "default_stop_time": 7,
     "remove_torrent": False,
-    "default_stoptime": 1.0,
+    "delay_time": 1,  # delay between adding torrent and setting initial seed time (in seconds)
     "filter_list": [], #example: {'field': 'tracker', 'filter': ".*", 'stop_time': 7.0}],
-    "torrent_stop_times": {},  # torrent_id: stop_time (in hours)
-    "delay_time": 1  # delay between adding torrent and setting initial seed time (in seconds)
+    "torrent_stop_times": {}  # torrent_id: stop_time (in hours)
 }
 
 class Core(CorePluginBase):
@@ -143,6 +143,11 @@ class Core(CorePluginBase):
                     log.debug('applying stop.... time %r' % stop_time)
                     self.set_torrent(torrent_id, stop_time)
                     break  # stop looking through filter list
+        else: #apply default if no filters match
+            stop_time = self.config['default_stop_time']
+            if stop_time > 0:
+                log.debug('applying stop.... time %r' % stop_time)
+                self.set_torrent(torrent_id, stop_time)
 
     def post_torrent_remove(self, torrent_id):
         log.debug("seedtime post_torrent_remove")
