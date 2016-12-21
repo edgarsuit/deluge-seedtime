@@ -31,7 +31,6 @@ Copyright:
     statement from all source files in the program, then also delete it here.
 */
 
-// TODO: gtk not working?
 // TODO: add same tooltips as gtk
 // TODO: fix perferance page layout, filter list grid automatic height
 // TODO: fix perferance page layout, resize buttons
