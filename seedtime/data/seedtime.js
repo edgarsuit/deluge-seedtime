@@ -128,7 +128,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
             fields : [
               {name : 'field', type : 'string'},
               {name : 'filter', type : 'string'},
-              {name : 'stoptime', type : 'float'},
+              {name : 'stop_time', type : 'float'},
             ],
             id : 0
           }),
@@ -153,7 +153,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
                 editor : { xtype : 'numberfield',
                            maxValue : 365.0,
                            minValue : 0.01 },
-                dataIndex : 'stoptime'
+                dataIndex : 'stop_time'
               },
             ]
           }),
@@ -201,7 +201,7 @@ Deluge.ux.preferences.SeedTimePage = Ext.extend(Ext.Panel, {
 
     filterAdd: function() {
         var store = this.filter_list.getStore();
-        store.insert(0, new store.recordType({ field : "label", filter : "RegEx", stoptime : 3.0}));
+        store.insert(0, new store.recordType({ field : "label", filter : "RegEx", stop_time : 3.0}));
     },
 
     filterRemove: function() {
@@ -271,7 +271,7 @@ Deluge.ux.CustomSeedtimeWindow = Ext.extend(Ext.Window, {
             labelWidth: 220,
             items: [{
                     fieldLabel: _('Stop Time (Days)'),
-                    name: 'stoptime',
+                    name: 'stop_time',
                     allowBlank: false,
                     maxValue : 365.0,
                     minValue : 0.01,
@@ -293,7 +293,7 @@ Deluge.ux.CustomSeedtimeWindow = Ext.extend(Ext.Window, {
     },
 
     onOkClick: function() {
-        this.item.stoptime = this.form.getForm().findField('stoptime').getValue();
+        this.item.stop_time = this.form.getForm().findField('stop_time').getValue();
         this.setStoptime(this.item, this.e)
         this.hide();
     },
@@ -305,7 +305,7 @@ Deluge.ux.CustomSeedtimeWindow = Ext.extend(Ext.Window, {
 
     onShow: function(comp) {
         Deluge.ux.CustomSeedtimeWindow.superclass.onShow.call(this, comp);
-        this.form.getForm().findField('stoptime').focus(false, 150);
+        this.form.getForm().findField('stop_time').focus(false, 150);
     }
 });
 
@@ -316,19 +316,19 @@ SeedTimePlugin = Ext.extend(Deluge.Plugin, {
     createMenu: function() {
         menuTimes = [1, 2, 3, 7, 14, 30],
         itemslist = [{  text: _('Never'),
-                        stoptime : -1,
+                        stop_time : -1,
                         handler: this.setStoptime,
                         scope: this
                 }];
         for(indx=0; indx < menuTimes.length; indx++) {
             itemslist.push({  text: _(menuTimes[indx] + ' Days'),
-                        stoptime : menuTimes[indx],
+                        stop_time : menuTimes[indx],
                         handler: this.setStoptime,
                         scope: this
                     });
         }
         itemslist.push({text: _('Custom'),
-                        stoptime : 1,
+                        stop_time : 1,
                         handler: this.setCustomStoptime,
                         scope: this
                         });
@@ -339,13 +339,13 @@ SeedTimePlugin = Ext.extend(Deluge.Plugin, {
         var ids = deluge.torrents.getSelectedIds();
         Ext.each(ids, function(id, i) {
             if (ids.length == i + 1) {
-                deluge.client.seedtime.set_torrent(id, item.stoptime, {
+                deluge.client.seedtime.set_torrent(id, item.stop_time, {
                     success: function() {
                         deluge.ui.update();
                     }
                 });
             } else {
-                deluge.client.seedtime.set_torrent(id, item.stoptime);
+                deluge.client.seedtime.set_torrent(id, item.stop_time);
             }
         });
     },
