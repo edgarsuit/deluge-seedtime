@@ -42,7 +42,7 @@ from setuptools import setup
 __plugin_name__ = "SeedTime"
 __author__ = "Chase Sterling"
 __author_email__ = "chase.sterling@gmail.com"
-__version__ = "0.6"
+__version__ = "0.7.0"
 __url__ = ""
 __license__ = "GPLv3"
 __description__ = "Automatically pause or remove torrents after specified amount of seeding."
