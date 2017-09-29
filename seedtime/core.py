@@ -100,8 +100,8 @@ class Core(CorePluginBase):
                     torrent.pause()
 
     ## Plugin hooks ##
-    def post_torrent_add(self, torrent_id):
-        if not self.torrent_manager.session_started:
+    def post_torrent_add(self, torrent_id, from_state=None):
+        if from_state == True or (from_state == None and not self.torrent_manager.session_started):
             return
         log.debug("seedtime post_torrent_add")
 
