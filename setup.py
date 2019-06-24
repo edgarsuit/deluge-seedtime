@@ -37,17 +37,19 @@
 #    statement from all source files in the program, then also delete it here.
 #
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 __plugin_name__ = "SeedTime"
 __author__ = "Chase Sterling"
 __author_email__ = "chase.sterling@gmail.com"
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __url__ = ""
 __license__ = "GPLv3"
-__description__ = "Automatically pause or remove torrents after specified amount of seeding."
+__description__ = (
+    "Automatically pause or remove torrents after specified amount of seeding."
+)
 __long_description__ = """"""
-__pkg_data__ = {__plugin_name__.lower(): ["template/*", "data/*"]}
+__pkg_data__ = {"deluge_" + __plugin_name__.lower(): ["data/*"]}
 
 setup(
     name=__plugin_name__,
@@ -58,16 +60,17 @@ setup(
     url=__url__,
     license=__license__,
     long_description=__long_description__ if __long_description__ else __description__,
-
-    packages=[__plugin_name__.lower()],
-    package_data = __pkg_data__,
-
+    packages=find_packages(),
+    package_data=__pkg_data__,
     entry_points="""
     [deluge.plugin.core]
-    %s = %s:CorePlugin
+    %s = deluge_%s:CorePlugin
     [deluge.plugin.gtkui]
     %s = %s:GtkUIPlugin
+    [deluge.plugin.gtk3ui]
+    %s = deluge_%s:Gtk3UIPlugin
     [deluge.plugin.web]
-    %s = %s:WebUIPlugin
-    """ % ((__plugin_name__, __plugin_name__.lower())*3)
+    %s = deluge_%s:WebUIPlugin
+    """
+    % ((__plugin_name__, __plugin_name__.lower()) * 4),
 )

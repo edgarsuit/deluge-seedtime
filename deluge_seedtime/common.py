@@ -1,5 +1,5 @@
 #
-# webui.py
+# common.py
 #
 # Copyright (C) 2009 Chase Sterling <chase.sterling@gmail.com>
 #
@@ -36,16 +36,12 @@
 #    this exception statement from your version. If you delete this exception
 #    statement from all source files in the program, then also delete it here.
 #
+from __future__ import unicode_literals
 
-import logging
+import os.path
 
-from deluge.plugins.pluginbase import WebPluginBase
+from pkg_resources import resource_filename
 
-from common import get_resource
 
-log = logging.getLogger(__name__)
-
-class WebUI(WebPluginBase):
-
-    scripts = [get_resource("seedtime.js")]
-    debug_scripts = scripts
+def get_resource(filename):
+    return resource_filename(__package__, os.path.join("data", filename))

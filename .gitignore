@@ -1,0 +1,8 @@
+env/
+*.code-workspace
+build/
+dist/
+*egg-info/
+.eggs/
+*.pyc
+create_dev_link.sh

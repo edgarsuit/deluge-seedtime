@@ -1,5 +1,5 @@
 #
-# common.py
+# webui.py
 #
 # Copyright (C) 2009 Chase Sterling <chase.sterling@gmail.com>
 #
@@ -37,6 +37,23 @@
 #    statement from all source files in the program, then also delete it here.
 #
 
-def get_resource(filename):
-    import pkg_resources, os
-    return pkg_resources.resource_filename("seedtime", os.path.join("data", filename))
+from __future__ import unicode_literals
+
+import logging
+
+from deluge.plugins.pluginbase import WebPluginBase
+
+from .common import get_resource
+
+log = logging.getLogger(__name__)
+
+
+class WebUI(WebPluginBase):
+
+    scripts = [get_resource("seedtime.js")]
+
+    def enable(self):
+        pass
+
+    def disable(self):
+        pass
