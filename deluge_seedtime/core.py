@@ -114,7 +114,8 @@ class Core(CorePluginBase):
                 if self.config["remove_torrent"]:
                     self.torrent_manager.remove(torrent_id)
                 else:
-                    torrent.pause()
+                    pass
+                    #torrent.pause()
 
     ## Plugin hooks ##
     def post_torrent_add(self, torrent_id, from_state=None):
